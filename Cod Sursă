@@ -1,0 +1,176 @@
+#include <Stepper.h>
+
+#include <Keypad.h>
+
+#include <Servo.h>
+
+#include <Wire.h>
+
+#include <FastIO.h>
+#include <I2CIO.h>
+
+#include <LCD.h>
+#include <LiquidCrystal.h>
+#include <LiquidCrystal_I2C.h>
+
+#include <string.h>
+#include <stdlib.h>
+
+//lcd
+#define GPIO_ADDR   0x27
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE); 
+//LiquidCrystal_I2C lcd(0x27,20,4);  // set the LCD address to 0x27 for a 16 chars and 2 line display
+
+// Declare the Servo pin 
+int servoPin = 3; 
+// Create a servo object 
+Servo Servo1; 
+/*
+int Pin1 = 10; 
+int Pin2 = 11; 
+int Pin3 = 12; 
+int Pin4 = 13; 
+*/
+Stepper stepper(32, 10, 12, 11, 13);
+int _step = 0;
+int ok=0;
+float c=0; 
+boolean dir = true;// false=counter clockwise, true=clockwise
+int count=0;
+
+//keypad
+const byte ROWS = 4; 
+const byte COLS = 4; 
+
+
+int k=0;
+char arrayt[]="";
+unsigned long sir=0;
+
+char hexaKeys[ROWS][COLS] = {
+ {'1', '2', '3', 'A'},
+  {'4', '5', '6', 'B'},
+  {'7', '8', '9', 'C'},
+  {'*', '0', '#', 'D'}
+};
+
+
+byte rowPins[ROWS] = {36, 34, 32, 30}; 
+byte colPins[COLS] = {28, 26, 24, 22}; 
+
+Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
+
+void clearandprint(){
+  lcd.setCursor(0,0);
+      for(int x = 0 ; x < 16 ; x++){
+        lcd.print(" ");
+      }
+      lcd.setCursor(2,1);
+      lcd.print("CODE ADDED"); 
+      sir=0; 
+}
+
+void setup()
+{
+
+ Servo1.attach(servoPin);
+ Servo1.write(0);
+  
+  lcd.backlight();
+  lcd.begin(16,2);
+  lcd.setCursor(1,0);
+  
+  Serial.begin(9600);
+  // Serial.println("CLEARDATA");
+Serial.println("LABEL,Acolumn,Bcolumn,...");
+//Serial.println("RESETTIMER");
+
+  stepper.setSpeed(200);
+}
+
+float i = 0;
+int j = 2;
+int wait = 0;
+int val = 0;
+int val1=0; 
+
+void loop()
+{
+
+  char customKey = customKeypad.getKey();
+  
+  
+  if(customKey){
+     if(customKey!='#')
+    {
+      
+      if(customKey == '1'){
+      sir = sir * 10 +1 ;
+    }
+    if(customKey == '2'){
+      sir = sir * 10 +2 ;
+    }
+    if(customKey == '3'){
+      sir = sir * 10 +3 ;
+    }
+    if(customKey == '4'){
+      sir = sir * 10 +4 ;
+    }
+    if(customKey == '5'){
+      sir = sir * 10 +5 ;
+    }
+    if(customKey == '6'){
+      sir = sir * 10 +6 ;
+    }
+    if(customKey == '7'){
+      sir = sir * 10 +7 ;
+    }
+    if(customKey == '8'){
+      sir = sir * 10 +8 ;
+    }
+    if(customKey == '9'){
+      sir = sir * 10 +9 ;
+    }
+    
+      lcd.print(customKey);  
+      }
+      else
+      { 
+      Serial.print("DATA,A");
+      
+      lcd.print(customKey);  
+      
+      Serial.print(sir);
+      Serial.println(); 
+      
+      clearandprint();
+
+      //move
+
+      Serial.print("am ajuns aici");
+
+     while(val<33){ 
+      // val = Serial.parseInt();
+      stepper.step(val);
+      Serial.println(val); //for debugging
+      val++;
+     }
+
+     delay(2000);
+     Servo1.write(90); // 90 de grade
+     delay(2000);
+     Servo1.write(0);
+
+
+    while(val1>-33){ 
+      // val1 = Serial.parseInt();
+      stepper.step(val1);
+      Serial.println(val1); //for debugging
+      val1--;
+     }
+     
+    }
+
+  }
+
+}
